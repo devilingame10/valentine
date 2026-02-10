@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff75a0, #fce38a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            transition: opacity 0.5s ease;
+        }
+
+        h1 {
+            color: #d63384;
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            margin-bottom: 20px;
+            animation: heartbeat 1.2s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            min-height: 60px;
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .yes-btn {
+            background: #ff4d6d;
+            color: white;
+            z-index: 11;
+        }
+
+        .no-btn {
+            background: #6c757d;
+            color: white;
+            position: relative;
+            z-index: 12;
+        }
+
+        /* Success Overlay */
+        #success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #ff4d6d;
+            color: white;
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .photo-frame {
+            width: 280px;
+            height: 280px;
+            border: 12px solid white;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            transform: rotate(-3deg);
+            animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0) rotate(10deg); opacity: 0; }
+            to { transform: scale(1) rotate(-3deg); opacity: 1; }
+        }
+
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatUp linear forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container" id="main-card">
+        <h1>💕 Miss Debi 💕</h1>
+        <p style="font-size: 1.2em; color: #555;">Will you be my Valentine?</p>
+        <div class="btn-group">
+            <button class="yes-btn" id="yesBtn">Yes! 😍</button>
+            <button class="no-btn" id="noBtn">No 🙅‍♀️</button>
+        </div>
+    </div>
+
+    <div id="success-overlay">
+        <h2 style="font-size: 3em;">YAY! 🎉</h2>
+        <p style="font-size: 1.5em; margin: 10px 0;">My Forever Valentine! ❤️</p>
+        
+        <div class="photo-frame">
+            <img src="us.jpg" alt="Our Memory">
+        </div>
+        
+        <p style="margin-top: 20px;">Thank You for existing in the same timeline!</p>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const mainCard = document.getElementById('main-card');
+        const successOverlay = document.getElementById('success-overlay');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // 1. MUSIC CONTROL (Starts on first user interaction)
+        document.body.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio waiting for user"));
+            }
+        }, { once: true });
+
+        // 2. RANDOM "NO" BUTTON DODGE
+        function moveNoButton() {
+            const padding = 60;
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding * 2) + padding;
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding * 2) + padding;
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+        }
+
+        noBtn.addEventListener('mouseenter', moveNoButton);
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); 
+            moveNoButton();
+        });
+
+        // 3. SUCCESS CELEBRATION
+        yesBtn.addEventListener('click', () => {
+            mainCard.style.opacity = '0';
+            setTimeout(() => {
+                mainCard.style.display = 'none';
+                successOverlay.style.display = 'flex';
+                
+                // Burst of hearts
+                for(let i = 0; i < 60; i++) {
+                    setTimeout(createHeart, i * 25);
+                }
+            }, 500);
+        });
+
+        // 4. FLOATING HEARTS
+        function createHeart() {
+            const heart = document.createElement('div');
+            const emojis = ['❤️', '💖', '💝', '✨', '🌸', '💓'];
+            
+            heart.className = 'heart-particle';
+            heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = Math.random() * 20 + 20 + 'px';
+            heart.style.animationDuration = Math.random() * 3 + 3 + 's';
+            
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 6000);
+        }
+
+        setInterval(createHeart, 400);
+
+        // Disables right-click to make it feel like a mini-app
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+</html>
